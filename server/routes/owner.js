@@ -25,7 +25,23 @@ const router = express.Router();
 // @route   GET /api/owner/restaurant
 // @desc    Get restaurant owner's restaurant details
 // @access  Private/RestaurantOwner
-router.get('/restaurant', protect, restaurantOwner, getOwnerRestaurant);
+router.get('/restaurant', protect, restaurantOwner, async (req, res) => {
+  try {
+    console.log('Fetching restaurant for owner:', req.user._id);
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    
+    if (!restaurant) {
+      console.log('No restaurant found for owner:', req.user._id);
+      return res.status(404).json({ message: 'Restaurant not found for this owner' });
+    }
+
+    console.log('Restaurant found:', restaurant._id);
+    res.json(restaurant);
+  } catch (error) {
+    console.error('Error fetching owner restaurant:', error);
+    res.status(500).json({ message: 'Failed to fetch restaurant details' });
+  }
+});
 
 // @route   GET /api/owner/restaurant/stats
 // @desc    Get restaurant statistics

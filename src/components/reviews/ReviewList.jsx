@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axios';
 import { useAuth } from '../../contexts/AuthContext';
 
 const ReviewList = ({ restaurantId }) => {
@@ -15,7 +15,7 @@ const ReviewList = ({ restaurantId }) => {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`/api/reviews?restaurant=${restaurantId}`);
+      const response = await axios.get(`/reviews?restaurant=${restaurantId}`);
       setReviews(response.data);
     } catch (error) {
       setError('Error fetching reviews');
@@ -31,7 +31,7 @@ const ReviewList = ({ restaurantId }) => {
     }
 
     try {
-      await axios.delete(`/api/reviews/${reviewId}`);
+      await axios.delete(`/reviews/${reviewId}`);
       setReviews(reviews.filter(review => review._id !== reviewId));
       setError('');
     } catch (error) {
@@ -44,7 +44,7 @@ const ReviewList = ({ restaurantId }) => {
   const handleReplySubmit = async (e, reviewId) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`/api/reviews/${reviewId}/replies`, {
+      const response = await axios.post(`/reviews/${reviewId}/replies`, {
         comment: replyText[reviewId]
       });
       setReviews(reviews.map(review =>
@@ -61,7 +61,7 @@ const ReviewList = ({ restaurantId }) => {
       return;
     }
     try {
-      await axios.delete(`/api/reviews/${reviewId}/replies/${replyId}`);
+      await axios.delete(`/reviews/${reviewId}/replies/${replyId}`);
       setReviews(reviews.map(review => {
         if (review._id === reviewId) {
           return {
@@ -99,23 +99,17 @@ const ReviewList = ({ restaurantId }) => {
         <p className="text-gray-600">No reviews yet. Be the first to review!</p>
       ) : (
         <div className="space-y-4">
-          {reviews.map(review => (
-            <div key={review._id} className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-start mb-4">
+          {reviews.map((review) => (
+            <div key={review._id} className="bg-white p-4 rounded-lg shadow">
+              <div className="flex justify-between items-start">
                 <div>
-                  <div className="flex items-center mb-2">
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <span className="ml-2 text-gray-600">{review.rating} stars</span>
+                  <h4 className="font-semibold">{review.user?.name || 'Anonymous'}</h4>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-yellow-400">{'★'.repeat(review.rating)}</span>
+                    <span className="text-gray-400">{'★'.repeat(5 - review.rating)}</span>
                   </div>
-                  <h4 className="font-semibold">{review.title}</h4>
                 </div>
-                {user && review.user && (user._id === review.user._id || user.role === 'admin') && (
+                {(user?._id === review.user?._id || user?.role === 'admin') && (
                   <button
                     onClick={() => handleDeleteReview(review._id)}
                     className="text-red-600 hover:text-red-800"
@@ -124,68 +118,65 @@ const ReviewList = ({ restaurantId }) => {
                   </button>
                 )}
               </div>
-              <p className="text-gray-600 mb-4">{review.comment}</p>
+              <p className="mt-2">{review.comment}</p>
+              
+              {/* Display review images if any */}
               {review.images && review.images.length > 0 && (
-                <div className="flex space-x-2 overflow-x-auto pb-2">
+                <div className="mt-2 flex space-x-2">
                   {review.images.map((image, index) => (
                     <img
                       key={index}
-                      src={typeof image === 'string' ? image : image.url}
+                      src={image.url}
                       alt={`Review image ${index + 1}`}
-                      className="h-24 w-24 object-cover rounded"
+                      className="w-24 h-24 object-cover rounded"
                     />
                   ))}
                 </div>
               )}
-              <div className="flex items-center text-sm text-gray-500 mt-2">
-                <span>By {review.user ? review.user.name : 'Unknown User'}</span>
-                <span className="mx-2">•</span>
-                <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-              </div>
-              {/* Review Replies */}
-              {review.replies && review.replies.length > 0 && (
-                <div className="mt-4 pl-6 border-l-2 border-gray-200">
-                  {review.replies.map((reply, index) => (
-                    <div key={index} className="mb-3 bg-gray-50 p-4 rounded">
-                      <p className="text-gray-700 mb-2">{reply.comment}</p>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <span>Response from {reply.user.name}</span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(reply.createdAt).toLocaleDateString()}</span>
-                        {user && user._id === reply.user._id && (
-                          <button
-                            onClick={() => handleDeleteReply(review._id, reply._id)}
-                            className="ml-4 text-red-600 hover:text-red-800 text-sm"
-                          >
-                            Delete Response
-                          </button>
-                        )}
-                      </div>
+
+              {/* Replies section */}
+              <div className="mt-4 space-y-2">
+                {review.replies && review.replies.map((reply) => (
+                  <div key={reply._id} className="ml-4 p-2 bg-gray-50 rounded">
+                    <div className="flex justify-between items-start">
+                      <p>
+                        <span className="font-semibold">{reply.user?.name || 'Staff'}</span>:
+                        {' '}{reply.comment}
+                      </p>
+                      {(user?._id === reply.user?._id || user?.role === 'admin') && (
+                        <button
+                          onClick={() => handleDeleteReply(review._id, reply._id)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-              {/* Reply Form for Restaurant Owners */}
-              {user && user.role === 'owner' && (
-                <div className="mt-4">
-                  <form onSubmit={(e) => handleReplySubmit(e, review._id)} className="space-y-3">
-                    <textarea
-                      value={replyText[review._id] || ''}
-                      onChange={(e) => setReplyText({ ...replyText, [review._id]: e.target.value })}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Write a response..."
-                      rows="3"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
-                    >
-                      Post Response
-                    </button>
+                  </div>
+                ))}
+
+                {/* Reply form for restaurant owners */}
+                {user?.role === 'restaurant_owner' && (
+                  <form onSubmit={(e) => handleReplySubmit(e, review._id)} className="mt-2">
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={replyText[review._id] || ''}
+                        onChange={(e) => setReplyText({ ...replyText, [review._id]: e.target.value })}
+                        placeholder="Write a response..."
+                        className="flex-1 p-2 border rounded"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
+                      >
+                        Reply
+                      </button>
+                    </div>
                   </form>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>

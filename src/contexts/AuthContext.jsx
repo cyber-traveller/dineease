@@ -22,26 +22,36 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
-        const response = await axiosInstance.get('/auth/me');
-        const userData = response.data;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-        // If user is a restaurant owner, fetch their restaurant details
-        if (userData.role === 'restaurant_owner') {
-          try {
-            const restaurantResponse = await axiosInstance.get('/owner/restaurant');
-            userData.restaurantId = restaurantResponse.data._id;
-            userData.restaurant = restaurantResponse.data;
-          } catch (error) {
-            console.error('Failed to fetch restaurant details:', error);
+      const response = await axiosInstance.get('/auth/profile');
+      const userData = response.data;
+
+      // If user is a restaurant owner, fetch their restaurant details
+      if (userData.role === 'restaurant_owner') {
+        try {
+          const restaurantResponse = await axiosInstance.get('/owner/restaurant');
+          userData.restaurantId = restaurantResponse.data._id;
+          userData.restaurant = restaurantResponse.data;
+        } catch (error) {
+          console.error('Failed to fetch restaurant details:', error);
+          if (error.response?.status === 404) {
+            userData.shouldCreateRestaurant = true;
+          } else {
+            // Handle other errors (500, network issues, etc.)
+            console.error('Restaurant fetch error:', error.response?.data || error.message);
           }
         }
-
-        setUser(userData);
       }
+
+      setUser(userData);
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('Auth check failed:', error.response?.data || error.message);
       localStorage.removeItem('token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -49,32 +59,30 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axiosInstance.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
-      localStorage.setItem('token', token);
+      const response = await axiosInstance.post('auth/login', { email, password });
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setUser(response.data.user);
 
-      // If user is a restaurant owner, fetch their restaurant details
-      if (userData.role === 'restaurant_owner') {
-        try {
-          const restaurantResponse = await axiosInstance.get('/owner/restaurant');
-          if (restaurantResponse.data.status === 'no_restaurant') {
-            userData.shouldCreateRestaurant = true;
-          } else {
-            userData.restaurantId = restaurantResponse.data._id;
-            userData.shouldCreateRestaurant = false;
+        // If user is a restaurant owner, fetch their restaurant details
+        if (response.data.user.role === 'restaurant_owner') {
+          try {
+            const restaurantResponse = await axiosInstance.get('/owner/restaurant');
+            const updatedUser = {
+              ...response.data.user,
+              restaurantId: restaurantResponse.data._id,
+              restaurant: restaurantResponse.data
+            };
+            setUser(updatedUser);
+          } catch (error) {
+            console.error('Error fetching restaurant:', error);
           }
-        } catch (error) {
-          console.error('Failed to fetch restaurant details:', error);
-          userData.shouldCreateRestaurant = true;
         }
-      }
 
-      setUser({
-        ...userData,
-        role: userData.role || 'user'
-      });
-      return { success: true, user: userData };
+        return { success: true };
+      }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, error: error.response?.data?.message || 'Login failed' };
     }
   };

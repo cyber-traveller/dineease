@@ -56,36 +56,49 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate request body
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '30d'
-    });
-
-    res.json({
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phoneNumber: user.phoneNumber
+    try {
+      // Check password
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
       }
-    });
+
+      // Generate token
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: '30d'
+      });
+
+      res.json({
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phoneNumber: user.phoneNumber
+        }
+      });
+    } catch (passwordError) {
+      console.error('Password comparison error:', passwordError);
+      return res.status(500).json({ message: 'Authentication error' });
+    }
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed' });
+    res.status(500).json({ 
+      message: 'Login failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

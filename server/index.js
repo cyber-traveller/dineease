@@ -48,8 +48,6 @@ app.set('trust proxy', 1);
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dineease';
 const connectWithRetry = () => {
   mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
   })
@@ -74,6 +72,7 @@ import paymentRoutes from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
 import ownerRoutes from './routes/owner.js';
 import uploadRoutes from './routes/upload.js';
+import menuRoutes from './routes/menu.js';
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -84,6 +83,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/menu', menuRoutes);
 
 // API Documentation route
 app.get('/', (req, res) => {

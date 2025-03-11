@@ -70,11 +70,16 @@ const RestaurantReservations = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold mb-4">Reservation Management</h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h2 className="text-2xl font-semibold">Reservation Management</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">{reservations.length} reservations found</span>
+        </div>
+      </div>
       
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
             <input
@@ -82,7 +87,7 @@ const RestaurantReservations = () => {
               name="startDate"
               value={filters.startDate}
               onChange={handleFilterChange}
-              className="input-field w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div>
@@ -92,7 +97,7 @@ const RestaurantReservations = () => {
               name="endDate"
               value={filters.endDate}
               onChange={handleFilterChange}
-              className="input-field w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div>
@@ -101,7 +106,7 @@ const RestaurantReservations = () => {
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="input-field w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>

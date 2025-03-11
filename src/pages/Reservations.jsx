@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ const Reservations = () => {
 
   const fetchReservations = async () => {
     try {
-      const response = await axios.get('/api/reservations');
+      const response = await axios.get('/reservations');
       setReservations(response.data);
     } catch (error) {
       setError('Error fetching reservations');
@@ -36,7 +36,7 @@ const Reservations = () => {
     }
 
     try {
-      await axios.put(`/api/reservations/${reservationId}`, {
+      await axios.put(`/reservations/${reservationId}`, {
         status: 'cancelled',
         cancellationReason: 'Cancelled by user'
       });

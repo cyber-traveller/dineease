@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axios';
 
 const PaymentForm = ({ amount, reservationId, onPaymentSuccess, onPaymentError }) => {
   const [loading, setLoading] = useState(false);
@@ -40,13 +40,22 @@ const PaymentForm = ({ amount, reservationId, onPaymentSuccess, onPaymentError }
         return;
       }
 
-      const { data } = await axios.post('/api/payments/create-order', {
+      const { data } = await axios.post('/payments/create-order', {
         amount,
         reservationId
       });
 
+      // Make sure we have the Razorpay key ID
+      const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!razorpayKeyId) {
+        console.error('Razorpay Key ID is missing in environment variables');
+        setError('Payment configuration error. Please contact support.');
+        setPaymentStatus('failed');
+        return;
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         amount: data.amount,
         currency: data.currency,
         name: 'DineEase',
@@ -58,7 +67,7 @@ const PaymentForm = ({ amount, reservationId, onPaymentSuccess, onPaymentError }
             setPaymentStatus('verifying');
             showNotification('Verifying payment...', 'info');
             
-            await axios.post('/api/payments/verify', {
+            await axios.post('/payments/verify', {
               reservationId,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,

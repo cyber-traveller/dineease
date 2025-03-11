@@ -45,7 +45,7 @@ const RestaurantOwnerDashboard = () => {
 
   const fetchRecentReservations = async () => {
     try {
-      const response = await axios.get(`/owner/reservations/recent`);
+      const response = await axios.get(`/api/owner/reservations/recent`);
       setRecentReservations(response.data);
     } catch (error) {
       setError('Error fetching recent reservations');

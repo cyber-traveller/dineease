@@ -28,7 +28,7 @@ const Login = () => {
       const result = await login(formData.email, formData.password);
       if (result.success) {
         if (result.user?.role === 'restaurant_owner') {
-          navigate('/owner');
+          navigate('/owner/dashboard');
         } else if (result.user?.role === 'admin') {
           navigate('/admin');
         } else {

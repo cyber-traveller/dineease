@@ -10,7 +10,7 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminDashboard from './pages/admin/Dashboard'
-import OwnerDashboard from './pages/owner/Dashboard'
+import OwnerDashboard from './pages/owner/OwnerDashboard'
 import { AuthProvider } from './contexts/AuthContext'
 
 const App = () => {

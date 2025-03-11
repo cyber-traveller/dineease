@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { Link } from 'react-router-dom';
 
 const Restaurants = () => {
@@ -7,7 +7,9 @@ const Restaurants = () => {
   const [filters, setFilters] = useState({
     cuisine: [],
     priceRange: '',
-    search: ''
+    search: '',
+    minRating: '',
+    features: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -21,11 +23,14 @@ const Restaurants = () => {
       if (filters.cuisine.length > 0) params.append('cuisine', filters.cuisine.join(','));
       if (filters.priceRange) params.append('priceRange', filters.priceRange);
       if (filters.search) params.append('search', filters.search);
+      if (filters.minRating) params.append('minRating', filters.minRating);
+      if (filters.features.length > 0) params.append('features', filters.features.join(','));
 
-      const response = await axios.get(`/api/restaurants?${params.toString()}`);
+      const response = await axios.get(`/restaurants?${params.toString()}`);
+      console.log('Restaurants response:', response.data);
       setRestaurants(response.data);
     } catch (error) {
-      console.error('Error fetching restaurants:', error);
+      console.error('Error fetching restaurants:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -116,9 +121,11 @@ const Restaurants = () => {
               </div>
               <p className="mt-1 text-sm text-gray-500">Select multiple cuisines</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
-              <div className="space-y-2">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                <div className="space-y-2">
+
                 {['$', '$$', '$$$', '$$$$'].map((price) => (
                   <label key={price} className="flex items-center space-x-2 cursor-pointer">
                     <input
@@ -132,6 +139,52 @@ const Restaurants = () => {
                     <span className="text-gray-700">{price}</span>
                   </label>
                 ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+                <select
+                  name="minRating"
+                  value={filters.minRating}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                >
+                  <option value="">Any Rating</option>
+                  <option value="3">3+ Stars</option>
+                  <option value="4">4+ Stars</option>
+                  <option value="4.5">4.5+ Stars</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Features</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    "Outdoor Seating", "Wifi", "Parking", "Bar",
+                    "Live Music", "Private Dining"
+                  ].map((feature) => (
+                    <label key={feature} className="flex items-center space-x-2 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                      <input
+                        type="checkbox"
+                        name="features"
+                        value={feature}
+                        checked={filters.features.includes(feature)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFilters(prev => ({
+                            ...prev,
+                            features: e.target.checked
+                              ? [...prev.features, value]
+                              : prev.features.filter(f => f !== value)
+                          }));
+                        }}
+                        className="text-primary focus:ring-primary h-4 w-4 rounded"
+                      />
+                      <span className="text-gray-700">{feature}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

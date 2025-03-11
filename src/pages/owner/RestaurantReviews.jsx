@@ -70,18 +70,23 @@ const RestaurantReviews = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold mb-4">Review Management</h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h2 className="text-2xl font-semibold">Review Management</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">{reviews.length} reviews found</span>
+        </div>
+      </div>
       
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
             <select
               name="rating"
               value={filters.rating}
               onChange={handleFilterChange}
-              className="input-field w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Ratings</option>
               <option value="5">5 Stars</option>
@@ -97,7 +102,7 @@ const RestaurantReviews = () => {
               name="sortBy"
               value={filters.sortBy}
               onChange={handleFilterChange}
-              className="input-field w-full"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="date">Date</option>
               <option value="rating">Rating</option>

@@ -63,7 +63,12 @@ userSchema.pre('save', async function(next) {
 
 // Method to compare password for login
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    throw new Error('Password comparison failed');
+  }
 };
 
 const User = mongoose.model('User', userSchema);
