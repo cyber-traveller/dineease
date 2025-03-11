@@ -107,6 +107,26 @@ npm run server
 - GET `/api/reviews/restaurant/:id` - Get restaurant reviews
 - PATCH `/api/reviews/:id` - Update review status (admin only)
 
+## User Credentials
+
+### User
+```
+Email: johndoe@example.com
+Password: userPassword123
+```
+
+### Owner
+```
+Email: janesmith@example.com
+Password: ownerPassword123
+```
+
+### Admin
+```
+Email: admin@example.com
+Password: admin123
+```
+
 ## Deployment
 
 The application can be deployed using platforms like Heroku, Vercel, or AWS:
@@ -133,3 +153,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - React.js team for the excellent frontend framework
 - MongoDB team for the powerful database solution
 - All contributors and supporters of the project
+
